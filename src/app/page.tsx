@@ -27,7 +27,7 @@ export default function DonezoLandingPage() {
           <div className="flex items-center justify-between">
             <div className="text-2xl font-bold text-red-400">donezo</div>
             <Button
-              variant="outline"
+              
               className="border-red-400 text-red-400 hover:bg-red-400 hover:text-slate-900 bg-transparent"
             >
               Join Waitlist
