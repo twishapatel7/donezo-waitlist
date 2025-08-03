@@ -7,16 +7,34 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Clock, MessageSquare, FileText, Upload, Brain, Send, FormInput, Headphones } from "lucide-react"
+import { CheckCircle, Clock, MessageSquare, FileText, Upload, Brain, Send, FormInput, Headphones, AlertCircle } from "lucide-react"
+import { addToWaitlist } from "@/lib/waitlist"
 
 export default function DonezoLandingPage() {
   const [email, setEmail] = useState("")
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle waitlist signup
-    setIsSubmitted(true)
+    setIsLoading(true)
+    setError("")
+    
+    try {
+      const result = await addToWaitlist(email)
+      if (result.success) {
+        setIsSubmitted(true)
+        setEmail("")
+      } else {
+        setError(result.message)
+      }
+    } catch (error) {
+      console.error('Waitlist submission error:', error);
+      setError("Something went wrong. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -53,19 +71,32 @@ export default function DonezoLandingPage() {
           {/* Waitlist Form */}
           <div className="max-w-md mx-auto">
             {!isSubmitted ? (
-              <form onSubmit={handleSubmit} className="flex gap-3">
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
-                />
-                <Button type="submit" className="bg-red-400 hover:bg-red-500 text-slate-900 font-semibold">
-                  Join Waitlist
-                </Button>
-              </form>
+              <div>
+                <form onSubmit={handleSubmit} className="flex gap-3">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                  />
+                  <Button 
+                    type="submit" 
+                    disabled={isLoading}
+                    className="bg-red-400 hover:bg-red-500 text-slate-900 font-semibold disabled:opacity-50"
+                  >
+                    {isLoading ? "Joining..." : "Join Waitlist"}
+                  </Button>
+                </form>
+                {error && (
+                  <div className="flex items-center gap-2 text-red-400 mt-3 text-sm">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{error}</span>
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="flex items-center justify-center gap-2 text-red-400">
                 <CheckCircle className="w-5 h-5" />
@@ -278,19 +309,32 @@ export default function DonezoLandingPage() {
           </p>
 
           {!isSubmitted ? (
-            <form onSubmit={handleSubmit} className="flex gap-3 max-w-md mx-auto">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
-              />
-              <Button type="submit" className="bg-red-400 hover:bg-red-500 text-slate-900 font-semibold">
-                Join Waitlist
-              </Button>
-            </form>
+            <div>
+              <form onSubmit={handleSubmit} className="flex gap-3 max-w-md mx-auto">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+                />
+                <Button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="bg-red-400 hover:bg-red-500 text-slate-900 font-semibold disabled:opacity-50"
+                >
+                  {isLoading ? "Joining..." : "Join Waitlist"}
+                </Button>
+              </form>
+              {error && (
+                <div className="flex items-center gap-2 text-red-400 mt-3 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{error}</span>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="flex items-center justify-center gap-2 text-red-400 text-lg">
               <CheckCircle className="w-6 h-6" />
